@@ -53,6 +53,8 @@ class HurtigrutenAPI(object):
         """
         self.i = i
         self.intermediate_url = self.travel_response['voyages'][self.i]['voyageUrl']
+        self.img_url = self.main + self.travel_response['voyages'][self.i]['image']
+        self.map_url = self.main + self.travel_response['voyages'][self.i]['map']
         self.initial_url = self.main + self.intermediate_url
         self.init_response = requests.get(self.initial_url)
         self.sel = Selector(self.init_response.text)
@@ -204,7 +206,7 @@ class HurtigrutenAPI(object):
         self.cr.execute('SELECT id FROM dimDepartureDate WHERE DepartureDate = ?;', (self.voyage_date, ))
         self.dep_id = self.cr.fetchone()[0]
 
-        self.cr.execute('INSERT OR IGNORE INTO dimTour(TourName) VALUES (?);', (self.travel_response["voyages"][self.i]["name"], ))
+        self.cr.execute('INSERT OR IGNORE INTO dimTour(TourName, TourImg, TourMap) VALUES (?, ?, ?);', (self.travel_response["voyages"][self.i]["name"], self.img_url, self.map_url, ))
         self.cr.execute('SELECT id FROM dimTour WHERE TourName = ?;', (self.travel_response["voyages"][self.i]["name"], ))
         self.tour_id = self.cr.fetchone()[0]
 
@@ -232,7 +234,7 @@ class HurtigrutenAPI(object):
     CREATE TABLE IF NOT EXISTS dimCabinCategory (id integer PRIMARY KEY AUTOINCREMENT, Category TEXT NOT NULL UNIQUE);
     CREATE TABLE IF NOT EXISTS dimVoyage (id integer PRIMARY KEY AUTOINCREMENT, VoyageType TEXT NOT NULL UNIQUE);
     CREATE TABLE IF NOT EXISTS dimDepartureDate (id integer PRIMARY KEY AUTOINCREMENT, DepartureDate TEXT NOT NULL UNIQUE);
-    CREATE TABLE IF NOT EXISTS dimTour (id integer PRIMARY KEY AUTOINCREMENT, TourName TEXT NOT NULL UNIQUE);
+    CREATE TABLE IF NOT EXISTS dimTour (id integer PRIMARY KEY AUTOINCREMENT, TourName TEXT NOT NULL UNIQUE, TourImg TEXT, TourMap TEXT);
     CREATE TABLE IF NOT EXISTS dimDestination (id integer PRIMARY KEY AUTOINCREMENT, Destination TEXT NOT NULL UNIQUE);    
     CREATE TABLE IF NOT EXISTS dimSourceMarket (id integer PRIMARY KEY AUTOINCREMENT, SourceMarket TEXT NOT NULL UNIQUE);
     CREATE TABLE IF NOT EXISTS Data_Explorer (
