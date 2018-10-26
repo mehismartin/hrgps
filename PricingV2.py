@@ -134,6 +134,7 @@ class HRGCoastalPScraper():
 
     def scrape(self, start=None):
         self.startdate(start)
+        self.sql3_storage()
         while self.reqDate < self.endDate:
             for m in self.markets:
                 for dp in self.DPs:
@@ -148,11 +149,9 @@ class HRGCoastalPScraper():
                         except:
                             self.fails.append(str(self.reqDate) + str(dp) + str(ap) + str(m))
             self.month_increment(self.reqDate)
+        self.connection.close()
 
-o = HRGCoastalPScraper()
-
-o.sql3_storage()
-
-o.scrape()
-o.connection.close()
+if __name__ == '__main__':
+    SCRAPER = HRGCoastalPScraper()
+    SCRAPER.scrape()
 #print(o.fails)
