@@ -10,7 +10,7 @@ class HRGCoastalPScraper():
         self.url='https://api.hurtigruten.com:443/api/Availability'
         self.headers = {'content-type': 'application/json'}
         #How far will data be gathered (y-m-d):
-        self.endDate = datetime(2020, 6, 2)
+        self.endDate = datetime(2021, 4, 1)
         self.DPs = ['BGO', 'KKN']
         self.APs = ['BGO', 'KKN', 'TRD']
         self.markets = ['NO', 'FR', 'DE', 'UK', 'US']
