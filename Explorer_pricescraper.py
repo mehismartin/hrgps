@@ -54,11 +54,11 @@ class HurtigrutenAPI(object):
         self.i = i
         self.intermediate_url = self.travel_response['voyages'][self.i]['voyageUrl']
         try:
-            self.img_url = self.main + self.travel_response['voyages'][self.i]['image']
+            self.img_url = self.travel_response['voyages'][self.i]['image']
         except:
             self.img_url = ""
         try:
-            self.map_url = self.main + self.travel_response['voyages'][self.i]['map']
+            self.map_url = self.travel_response['voyages'][self.i]['map']
         except:
             self.map_url = ""
         self.initial_url = self.main + self.intermediate_url
