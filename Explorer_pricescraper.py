@@ -53,12 +53,18 @@ class HurtigrutenAPI(object):
         """
         self.i = i
         self.intermediate_url = self.travel_response['voyages'][self.i]['voyageUrl']
-        self.img_url = self.main + self.travel_response['voyages'][self.i]['image']
-        self.map_url = self.main + self.travel_response['voyages'][self.i]['map']
+        try:
+            self.img_url = self.main + self.travel_response['voyages'][self.i]['image']
+        except:
+            self.img_url = ""
+        try:
+            self.map_url = self.main + self.travel_response['voyages'][self.i]['map']
+        except:
+            self.map_url = ""
         self.initial_url = self.main + self.intermediate_url
         self.init_response = requests.get(self.initial_url)
         self.sel = Selector(self.init_response.text)
-        print(self.init_response)
+        """print(self.init_response)"""
         return self.sel
 
     def travel_codes(self):
@@ -69,7 +75,7 @@ class HurtigrutenAPI(object):
         """
         self.codes = self.sel.xpath('//script[contains(.,"products")]').re_first('id: \"([^\"]+)\"')
         self.codes = self.codes.split(',')
-        print(self.codes)
+        """print(self.codes)"""
         return self.codes
 
     def gateways_response(self, code):
@@ -101,7 +107,7 @@ class HurtigrutenAPI(object):
         self.grouped_url = 'https://shadowprodapi.hurtigruten.com/api/availability/travelsuggestions/grouped'
         self.group_response = requests.post(self.grouped_url, data=self.grouped_payload.format(self.code, self.date), headers=self.headers).json()
         self.quote_id = self.group_response["quoteId"]
-        print(self.quote_id)
+        """print(self.quote_id)"""
         return self.group_response, self.quote_id
 
     def get_quote(self, item):
@@ -173,7 +179,7 @@ class HurtigrutenAPI(object):
                     self.quote["categoryPrices"][2]['price']['amount'],
                     self.quote["categoryPrices"][3]['price']['amount'])
         self.writer.writerow(self.row)
-        print(self.row)
+        """print(self.row)"""
 
     def startdate(self, start=None):
         if start is None:
