@@ -33,13 +33,13 @@ class HurtigrutenAPI(object):
 
     """
     def __init__(self):
-        self.main = 'https://www.hurtigruten.com'
+        self.main = 'https://www.hurtigruten.no'
         self.markets = ['NO', 'FR', 'DE', 'UK', 'US']
         self.voyagetype = 'EXPLORER'
 
     def travelfilter_response(self):
         """Get response from main filter page such that we can loop through all tours"""
-        self.travelfilter_url = 'https://www.hurtigruten.no/api/travelfilter?destinationId=&departureMonthYear=&shipId=&marketCode=UK&languageCode=en'
+        self.travelfilter_url = 'https://www.hurtigruten.com/api/travelfilter?destinationId=&departureMonthYear=&shipId=&marketCode=NO&languageCode=no'
         self.travel_response = requests.get(self.travelfilter_url).json()
         return self.travel_response
 
@@ -58,6 +58,7 @@ class HurtigrutenAPI(object):
         self.initial_url = self.main + self.intermediate_url
         self.init_response = requests.get(self.initial_url)
         self.sel = Selector(self.init_response.text)
+        print(self.init_response)
         return self.sel
 
     def travel_codes(self):
@@ -66,8 +67,9 @@ class HurtigrutenAPI(object):
         Returns: list
 
         """
-        self.codes = self.sel.xpath('//script[contains(.,"packageCodes")]').re_first(r'"packageCodes": \[(.*)\],')
+        self.codes = self.sel.xpath('//script[contains(.,"products")]').re_first('id: \"([^\"]+)\"')
         self.codes = self.codes.split(',')
+        print(self.codes)
         return self.codes
 
     def gateways_response(self, code):
@@ -78,7 +80,7 @@ class HurtigrutenAPI(object):
         """
         self.code = code
         self.gateways_url = "https://shadowprodapi.hurtigruten.com/api//travelsuggestions/gateways"
-        self.gateways_payload = '{{"travelSuggestionCodes":[{}],"marketCode":"DE","languageCode":"en"}}'
+        self.gateways_payload = '{{"travelSuggestionCodes":["{}"],"marketCode":"NO","languageCode":"no"}}'
         self.headers = {'content-type': "application/json"}
         self.gate_response = requests.post(self.gateways_url, data=self.gateways_payload.format(self.code), headers=self.headers).json()
         self.date = self.gate_response["gateways"][0]["firstAvailableDate"].split('T')[0]
@@ -95,10 +97,11 @@ class HurtigrutenAPI(object):
         self.code = code
         self.marketcode = m
         #self.grouped_payload = '{{"packageCode":{},"searchFromDateTime":"{}","cabins":[{{"passengers":[{{"ageCategory":"ADULT","guestType":"REGULAR"}},{{"ageCategory":"ADULT","guestType":"REGULAR"}}]}}],"currencyCode":"NOK","marketCode":"'self.marketcode'","languageCode":"en","quoteId":null,"bookingSourceCode":"TDL_B2C_NO"}}'
-        self.grouped_payload = '{{"packageCode":{},"searchFromDateTime":"{}","cabins":[{{"passengers":[{{"ageCategory":"ADULT","guestType":"REGULAR"}},{{"ageCategory":"ADULT","guestType":"REGULAR"}}]}}],"currencyCode":"NOK","marketCode":"' + str(self.marketcode) +'","languageCode":"en","quoteId":null,"bookingSourceCode":"TDL_B2C_NO"}}'
+        self.grouped_payload = '{{"packageCode":"{}","searchFromDateTime":"{}","cabins":[{{"passengers":[{{"ageCategory":"ADULT","guestType":"REGULAR"}},{{"ageCategory":"ADULT","guestType":"REGULAR"}}]}}],"currencyCode":"NOK","marketCode":"' + str(self.marketcode) +'","languageCode":"no","quoteId":null,"bookingSourceCode":"TDL_B2C_NO"}}'
         self.grouped_url = 'https://shadowprodapi.hurtigruten.com/api/availability/travelsuggestions/grouped'
         self.group_response = requests.post(self.grouped_url, data=self.grouped_payload.format(self.code, self.date), headers=self.headers).json()
         self.quote_id = self.group_response["quoteId"]
+        print(self.quote_id)
         return self.group_response, self.quote_id
 
     def get_quote(self, item):
@@ -219,7 +222,7 @@ class HurtigrutenAPI(object):
         self.source_id = self.cr.fetchone()[0]
 
         self.cr.execute('INSERT OR IGNORE INTO Data_Explorer(rDate_id, ship_id, cat_id, type_id, dep_id, tour_id, dest_id, source_id, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);', (self.rDate_id, self.ship_id, self.cat_id, self.type_id, self.dep_id, self.tour_id, self.dest_id, self.source_id, self.price['price']['amount']))
-#        print(self.rDate_id, self.ship_id, self.cat_id, self.type_id, self.dep_id, self.tour_id, self.dest_id, self.source_id, self.price['price']['amount'])
+        print(self.rDate_id, self.ship_id, self.cat_id, self.type_id, self.dep_id, self.tour_id, self.dest_id, self.source_id, self.price['price']['amount'])
         self.connection.commit()
 
     def sql3_storage(self, location='C:\\Users\\H520139\\.spyder-py3\\HRG\\DBs\\', dbname='Pricing.db'):
