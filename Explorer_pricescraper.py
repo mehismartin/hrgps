@@ -22,6 +22,7 @@ import csv
 import requests
 import pytz
 import sqlite3
+import re
 from parsel import Selector
 from datetime import datetime
 
@@ -55,10 +56,14 @@ class HurtigrutenAPI(object):
         self.intermediate_url = self.travel_response['voyages'][self.i]['voyageUrl']
         try:
             self.img_url = self.travel_response['voyages'][self.i]['image']
+            if re.search(r'^https:',self.img_url,flags=0) is None: self.img_url = self.main + self.img_url
+            print(self.img_url)
         except:
             self.img_url = ""
         try:
             self.map_url = self.travel_response['voyages'][self.i]['map']
+            if re.search(r'^https:',self.map_url,flags=0) is None: self.map_url = self.main + self.map_url
+            print(self.map_url)
         except:
             self.map_url = ""
         self.initial_url = self.main + self.intermediate_url
@@ -73,8 +78,9 @@ class HurtigrutenAPI(object):
         Returns: list
 
         """
-        self.codes = self.sel.xpath('//script[contains(.,"products")]').re_first('id: \"([^\"]+)\"')
-        self.codes = self.codes.split(',')
+        self.codes = self.sel.xpath('//script[contains(.,"products")]').extract_first()
+        self.codes = re.findall(r'id: \"([^\"]+)\"',self.codes,flags=0)
+        """self.codes = self.codes.split(',')"""
         """print(self.codes)"""
         return self.codes
 
